@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morpheye Platform</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #fafafa;
+            min-height: 100vh;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            border-bottom: 1px solid #262626;
+        }
+        
+        .logo { display: flex; align-items: center; gap: 16px; }
+        .logo-icon { font-size: 48px; }
+        .logo-text h1 { font-size: 28px; background: linear-gradient(135deg, #41AA8F, #22c55e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-text p { color: #71717a; font-size: 13px; }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 24px 0;
+        }
+        
+        .stat-card {
+            background: #1a1a1a;
+            border: 1px solid #262626;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .stat-label { font-size: 12px; color: #71717a; text-transform: uppercase; margin-bottom: 8px; }
+        .stat-value { font-size: 24px; font-weight: 600; }
+        .stat-value.positive { color: #22c55e; }
+        .stat-value.negative { color: #ef4444; }
+        
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin: 24px 0;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: #1a1a1a;
+            border: 1px solid #262626;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .tab:hover { border-color: #41AA8F; }
+        .tab.active {
+            background: #41AA8F20;
+            border-color: #41AA8F;
+            color: #41AA8F;
+        }
+        
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .market-card {
+            background: #1a1a1a;
+            border: 1px solid #262626;
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+        
+        .market-card:hover {
+            border-color: #41AA8F;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(65, 170, 143, 0.1);
+        }
+        
+        .market-category {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #41AA8F20;
+            color: #41AA8F;
+            border-radius: 16px;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .market-question {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        
+        .price-bars { margin: 20px 0; }
+        
+        .price-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .price-label { width: 50px; font-size: 13px; font-weight: 600; }
+        .price-label.yes { color: #22c55e; }
+        .price-label.no { color: #ef4444; }
+        
+        .price-bar {
+            flex: 1;
+            height: 28px;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #262626;
+            position: relative;
+        }
+        
+        .price-fill {
+            height: 100%;
+            transition: width 0.8s ease;
+        }
+        
+        .price-fill.yes { background: linear-gradient(90deg, #22c55e, #16a34a); }
+        .price-fill.no { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        
+        .price-text {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        
+        .trade-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .trade-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .trade-btn.yes {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+        }
+        
+        .trade-btn.yes:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
+        
+        .trade-btn.no {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+        }
+        
+        .trade-btn.no:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #71717a;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #262626;
+            border-top-color: #41AA8F;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal {
+            background: #1a1a1a;
+            border: 1px solid #262626;
+            border-radius: 20px;
+            padding: 32px;
+            width: 90%;
+            max-width: 420px;
+        }
+        
+        .modal h3 { font-size: 20px; margin-bottom: 20px; }
+        .modal input {
+            width: 100%;
+            padding: 14px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fafafa;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .modal input:focus {
+            outline: none;
+            border-color: #41AA8F;
+        }
+        
+        .modal-info {
+            color: #71717a;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .modal-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .modal-btn.cancel { background: #262626; color: #fafafa; }
+        .modal-btn.confirm { background: #41AA8F; color: #fff; }
+        
+        .position-card {
+            background: #1a1a1a;
+            border: 1px solid #262626;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .position-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .position-pnl.positive { color: #22c55e; }
+        .position-pnl.negative { color: #ef4444; }
+        
+        .close-btn {
+            width: 100%;
+            padding: 10px;
+            background: #262626;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fafafa;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        
+        .close-btn:hover { background: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">🔮</div>
+                <div class="logo-text">
+                    <h1>Morpheye Platform</h1>
+                    <p>AI-Powered Prediction Markets</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-bar" id="stats">
+            <div class="stat-card">
+                <div class="stat-label">Balance</div>
+                <div class="stat-value" id="balance">$10,000</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Portfolio Value</div>
+                <div class="stat-value" id="portfolio-value">$10,000</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total P&L</div>
+                <div class="stat-value positive" id="total-pnl">$0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Positions</div>
+                <div class="stat-value" id="positions-count">0</div>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('scanner')">📊 Scanner</button>
+            <button class="tab" onclick="showTab('positions')">💼 Positions</button>
+            <button class="tab" onclick="showTab('history')">📜 History</button>
+        </div>
+        
+        <div id="scanner-tab">
+            <div class="market-grid" id="markets"></div>
+        </div>
+        
+        <div id="positions-tab" style="display:none;">
+            <div id="positions-container"></div>
+        </div>
+        
+        <div id="history-tab" style="display:none;">
+            <div id="history-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8000' 
+            : window.location.origin.replace(/\/$/, '') + '/api';
+        
+        let markets = [];
+        let userAddress = 'demo_user_' + Math.random().toString(36).substr(2, 9);
+        
+        async function loadMarkets() {
+            const container = document.getElementById('markets');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading markets...</p></div>';
+            
+            try {
+                const res = await fetch(`${API}/markets?limit=30`);
+                const data = await res.json();
+                markets = data.markets || [];
+                renderMarkets();
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<div class="loading">⚠️ API not responding. Is the server running?</div>';
+            }
+        }
+        
+        function renderMarkets() {
+            const container = document.getElementById('markets');
+            container.innerHTML = markets.map(m => `
+                <div class="market-card">
+                    <span class="market-category">${m.category}</span>
+                    <div class="market-question">${m.question}</div>
+                    <div class="price-bars">
+                        <div class="price-row">
+                            <span class="price-label yes">Yes</span>
+                            <div class="price-bar">
+                                <div class="price-fill yes" style="width:${m.yes_price}%"></div>
+                                <span class="price-text">${m.yes_price.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                        <div class="price-row">
+                            <span class="price-label no">No</span>
+                            <div class="price-bar">
+                                <div class="price-fill no" style="width:${m.no_price}%"></div>
+                                <span class="price-text">${m.no_price.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="trade-buttons">
+                        <button class="trade-btn yes" onclick="openTrade('${m.id}', '${m.question.replace(/'/g, "\\'")}', 'Yes', ${m.yes_price/100})">
+                            BUY YES
+                        </button>
+                        <button class="trade-btn no" onclick="openTrade('${m.id}', '${m.question.replace(/'/g, "\\'")}', 'No', ${m.no_price/100})">
+                            BUY NO
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        let currentTrade = null;
+        
+        function openTrade(marketId, question, side, price) {
+            currentTrade = { marketId, question, side, price };
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'modal';
+            modal.innerHTML = `
+                <div class="modal">
+                    <h3>Trade ${side}</h3>
+                    <p style="margin-bottom:16px;color:#71717a">${question.substring(0, 60)}...</p>
+                    <input type="number" id="trade-size" placeholder="Amount ($)" value="100" min="1">
+                    <div class="modal-info">Price: ${(price*100).toFixed(1)}%</div>
+                    <div class="modal-buttons">
+                        <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+                        <button class="modal-btn confirm" onclick="executeTrade()">Execute</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function closeModal() {
+            document.getElementById('modal')?.remove();
+            currentTrade = null;
+        }
+        
+        async function executeTrade() {
+            const size = parseFloat(document.getElementById('trade-size').value);
+            if (!size || size <= 0) return alert('Invalid amount');
+            
+            try {
+                const res = await fetch(`${API}/trade/open`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_address: userAddress,
+                        market_id: currentTrade.marketId,
+                        market_question: currentTrade.question,
+                        side: currentTrade.side,
+                        price: currentTrade.price,
+                        size: size
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('✅ Trade executed!');
+                    closeModal();
+                    loadUser();
+                } else {
+                    alert('❌ ' + (data.detail || 'Trade failed'));
+                }
+            } catch (e) {
+                alert('❌ API error: ' + e.message);
+            }
+        }
+        
+        async function loadUser() {
+            try {
+                const res = await fetch(`${API}/user/${userAddress}`);
+                const data = await res.json();
+                
+                document.getElementById('balance').textContent = '$' + data.balance.toLocaleString();
+                document.getElementById('positions-count').textContent = data.positions.length;
+                
+                const portfolioValue = data.balance + data.positions.reduce((s, p) => s + p.size, 0);
+                document.getElementById('portfolio-value').textContent = '$' + portfolioValue.toLocaleString();
+                
+                const pnl = data.total_pnl || 0;
+                const pnlEl = document.getElementById('total-pnl');
+                pnlEl.textContent = (pnl >= 0 ? '+' : '') + '$' + pnl.toLocaleString();
+                pnlEl.className = 'stat-value ' + (pnl >= 0 ? 'positive' : 'negative');
+                
+                renderPositions(data.positions);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        function renderPositions(positions) {
+            const container = document.getElementById('positions-container');
+            
+            if (!positions.length) {
+                container.innerHTML = '<div class="loading">No positions. Trade from Scanner!</div>';
+                return;
+            }
+            
+            container.innerHTML = positions.map(p => `
+                <div class="position-card">
+                    <div class="position-header">
+                        <div><strong>${p.market_question.substring(0, 40)}...</strong></div>
+                    </div>
+                    <div style="margin:12px 0;font-size:13px;color:#71717a">
+                        Side: ${p.side} | Entry: ${(p.price*100).toFixed(1)}% | Size: $${p.size}
+                    </div>
+                    <button class="close-btn" onclick="closePosition(${p.id}, ${p.price})">Close Position</button>
+                </div>
+            `).join('');
+        }
+        
+        async function closePosition(positionId, entryPrice) {
+            const exitPrice = entryPrice + (Math.random() - 0.5) * 0.1;
+            
+            try {
+                const res = await fetch(`${API}/trade/close`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_address: userAddress,
+                        position_id: positionId,
+                        exit_price: exitPrice
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert(`✅ Position closed! P&L: $${data.pnl.toFixed(2)}`);
+                    loadUser();
+                } else {
+                    alert('❌ Close failed');
+                }
+            } catch (e) {
+                alert('❌ API error');
+            }
+        }
+        
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('scanner-tab').style.display = tab === 'scanner' ? 'block' : 'none';
+            document.getElementById('positions-tab').style.display = tab === 'positions' ? 'block' : 'none';
+            document.getElementById('history-tab').style.display = tab === 'history' ? 'block' : 'none';
+        }
+        
+        // Init
+        loadMarkets();
+        loadUser();
+        setInterval(loadMarkets, 30000);
+    </script>
+</body>
+</html>

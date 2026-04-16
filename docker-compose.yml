@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_PATH=/app/data/morpheye.db
+    volumes:
+      - morpheye-data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  morpheye-data:
